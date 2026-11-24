@@ -1,5 +1,18 @@
 # stm32_can_light — 车载前大灯 CAN 控制系统
 
+> **简历精简版（只写这 3 条）** —— 本项目在简历里只承担"总线可靠通信 + 故障恢复"，
+> PWM 调光、编码器、OLED 等细节全部不写，下面长文档留在仓库备查。
+>
+> 1. 双 STM32F103C8T6 一主一从，CAN 250kbps（36MHz/9/16TQ、采样点 75%），
+>    滤波器全通 + 软件按 0x100/0x200/0x7DF 分发；
+> 2. 发送帧带 4bit RollingCounter + CRC8（AUTOSAR SAE J1850），防重放/检错，
+>    接收中断只搬运到 8 帧环形缓冲，主循环解析，发送等邮箱 100ms 超时 Abort；
+> 3. 关硬件 AutoBusOff，软件轮询 TEC/REC，TEC>255 判 BusOff 并按 Stop-延时-Start
+>    恢复；200ms 心跳 + 1s 掉线判定，掉线置 DTC 并可被 UDS 读取。
+>
+> 面试讲解主线：**"信号安全校验 → 中断解耦 → 故障检测与恢复"**，
+> 其他都是佐证。详细讲解见 [docs/project_documentation.md](docs/project_documentation.md)。
+
 基于 **STM32F103C8T6** 的前大灯控制系统，通过 **CAN 总线 (250kbps)** 实现灯光控制、AFS 弯道辅助照明、UDS 诊断、网络管理心跳与信号安全校验，是一套贴近车载电子量产要求的完整示例工程。
 
 ---
